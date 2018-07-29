@@ -1,3 +1,9 @@
+# Remove firewalld
+yum remove firewalld -y
+
+# Install net-tools
+yum install net-tools -y
+
 # Wazuh repository
 cat > /etc/yum.repos.d/wazuh.repo <<\EOF
 [wazuh_repo]

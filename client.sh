@@ -1,3 +1,9 @@
+# Remove firewalld
+yum remove firewalld -y
+
+# Install net-tools
+yum install net-tools -y
+
 # Wazuh repository
 cat > /etc/yum.repos.d/wazuh.repo <<\EOF
 [wazuh_repo]
@@ -15,7 +21,6 @@ yum install wazuh-manager -y
 # Wazuh cluster dependencies
 yum install python-setuptools python-cryptography -y
 
-: <<'COMMENT'
 # Elastic GPG KEY
 rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
 
@@ -41,8 +46,7 @@ systemctl enable wazuh-manager
 
 # Filebeat configuration
 curl -so /etc/filebeat/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/3.4/extensions/filebeat/filebeat.yml
-sed -i 's:ELASTIC_SERVER_IP:192.168.1.193:g' /etc/filebeat/filebeat.yml
-COMMENT
+sed -i 's:YOUR_ELASTIC_SERVER_IP:192.168.1.193:g' /etc/filebeat/filebeat.yml
 
 # Wazuh cluster configuration
 sed -i 's:<node_name>node01</node_name>:<node_name>node02</node_name>:g' /var/ossec/etc/ossec.conf
@@ -55,4 +59,4 @@ sed -i 's:<disabled>yes</disabled>:<disabled>no</disabled>:g' /var/ossec/etc/oss
 systemctl restart wazuh-manager
 
 # Run Filebeat
-# systemctl restart filebeat
+systemctl restart filebeat

@@ -1,3 +1,12 @@
+# Remove firewalld
+yum remove firewalld -y
+
+# Install net-tools
+yum install net-tools -y
+
+# Install git and zip
+yum install git zip -y
+
 # Wazuh repository
 cat > /etc/yum.repos.d/wazuh.repo <<\EOF
 [wazuh_repo]
@@ -36,12 +45,15 @@ systemctl enable wazuh-api
 systemctl restart wazuh-manager
 systemctl restart wazuh-api
 
-: <<'COMMENT'
 # Install Java 8
-curl -Lo jre-8-linux-x64.rpm --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/jre-8u181-linux-x64.rpm"
-rpm -qlp jre-8-linux-x64.rpm > /dev/null 2>&1 && echo "Java package downloaded successfully" || echo "Java package did not download successfully"
-yum -y install jre-8-linux-x64.rpm
-rm -f jre-8-linux-x64.rpm
+if which java ; then
+	echo "Java already installed"
+else
+	curl -Lo jre-8-linux-x64.rpm --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/jre-8u181-linux-x64.rpm"
+	rpm -qlp jre-8-linux-x64.rpm > /dev/null 2>&1 && echo "Java package downloaded successfully" || echo "Java package did not download successfully"
+	yum -y install jre-8-linux-x64.rpm
+	rm -f jre-8-linux-x64.rpm
+fi
 
 # Elastic GPG KEY
 rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
@@ -82,7 +94,10 @@ curl -so /etc/logstash/conf.d/01-wazuh.conf https://raw.githubusercontent.com/wa
 
 # Filebeat configuration
 curl -so /etc/filebeat/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/3.4/extensions/filebeat/filebeat.yml
-sed -i 's:ELASTIC_SERVER_IP:127.0.0.1:g' /etc/filebeat/filebeat.yml
+sed -i 's:YOUR_ELASTIC_SERVER_IP:127.0.0.1:g' /etc/filebeat/filebeat.yml
+
+# Kibana wildcard
+sed -i 's:\#server.host\: "localhost":server\.host\: "0.0.0.0":g' /etc/kibana/kibana.yml
 
 # Run Logstash
 systemctl restart logstash
@@ -92,8 +107,7 @@ systemctl restart filebeat
 
 # Run Kibana
 systemctl restart kibana
-COMMENT
 
 echo "Listening authd..."
 
-/var/ossec/bin/ossec-authd -ddf -i &
+/var/ossec/bin/ossec-authd -i 
