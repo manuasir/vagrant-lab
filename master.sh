@@ -36,6 +36,30 @@ sed -i 's:<key></key>:<key>9d273b53510fef702b54a92e9cffc82e</key>:g' /var/ossec/
 sed -i 's:<node>NODE_IP</node>:<node>192.168.1.193</node>:g' /var/ossec/etc/ossec.conf
 sed -i 's:<disabled>yes</disabled>:<disabled>no</disabled>:g' /var/ossec/etc/ossec.conf
 
+# download splunkforwarder
+wget -O splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.1.3&product=universalforwarder&filename=splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm&wget=true'
+
+# install splunkforwarder
+yum install -y splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm
+
+# set hostname
+sed -i "s:MANAGER_HOSTNAME:$(hostname):g" /opt/splunkforwarder/etc/system/local/inputs.conf
+
+# props.conf
+curl -so /opt/splunkforwarder/etc/system/local/props.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/props.conf
+
+# inputs.conf
+curl -so /opt/splunkforwarder/etc/system/local/inputs.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/inputs.conf
+
+# accept license
+/opt/splunkforwarder/bin/splunk start --accept-license
+
+# forward to index
+/opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
+
+# restart service
+/opt/splunkforwarder/bin/splunk restart
+
 # Enable Wazuh services
 systemctl daemon-reload
 systemctl enable wazuh-manager
@@ -44,69 +68,6 @@ systemctl enable wazuh-api
 # Run Wazuh manager and Wazuh API
 systemctl restart wazuh-manager
 systemctl restart wazuh-api
-
-# Install Java 8
-if which java ; then
-	echo "Java already installed"
-else
-	curl -Lo jre-8-linux-x64.rpm --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/jre-8u181-linux-x64.rpm"
-	rpm -qlp jre-8-linux-x64.rpm > /dev/null 2>&1 && echo "Java package downloaded successfully" || echo "Java package did not download successfully"
-	yum -y install jre-8-linux-x64.rpm
-	rm -f jre-8-linux-x64.rpm
-fi
-
-# Elastic GPG KEY
-rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
-
-# Elastic repository
-cat > /etc/yum.repos.d/elastic.repo << EOF
-[elasticsearch-6.x]
-name=Elasticsearch repository for 6.x packages
-baseurl=https://artifacts.elastic.co/packages/6.x/yum
-gpgcheck=1
-gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-autorefresh=1
-type=rpm-md
-EOF
-
-# Install Logstash
-yum install elasticsearch-6.3.2 logstash-6.3.2 filebeat-6.3.2 kibana-6.3.2 -y
-
-# Enable Elastic services
-systemctl daemon-reload
-systemctl enable elasticsearch
-systemctl enable logstash
-systemctl enable filebeat
-systemctl enable kibana
-
-# Run Elasticsearch
-systemctl restart elasticsearch
-
-# Wait for Elasticsearch
-sleep 20
-
-# Insert the template
-curl https://raw.githubusercontent.com/wazuh/wazuh/3.4/extensions/elasticsearch/wazuh-elastic6-template-alerts.json | curl -XPUT 'http://localhost:9200/_template/wazuh' -H 'Content-Type: application/json' -d @-
-
-# Logstash remote configuration
-curl -so /etc/logstash/conf.d/01-wazuh.conf https://raw.githubusercontent.com/wazuh/wazuh/3.4/extensions/logstash/01-wazuh-remote.conf
-
-# Filebeat configuration
-curl -so /etc/filebeat/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/3.4/extensions/filebeat/filebeat.yml
-sed -i 's:YOUR_ELASTIC_SERVER_IP:127.0.0.1:g' /etc/filebeat/filebeat.yml
-
-# Kibana wildcard
-sed -i 's:\#server.host\: "localhost":server\.host\: "0.0.0.0":g' /etc/kibana/kibana.yml
-
-# Run Logstash
-systemctl restart logstash
-
-# Run Filebeat
-systemctl restart filebeat
-
-# Run Kibana
-systemctl restart kibana
 
 echo "Listening authd..."
 

@@ -18,11 +18,11 @@ Vagrant.configure("2") do |config|
 	  client.vm.network "public_network", ip: "192.168.1.194", bridge: 'wlp2s0'
 	end
 
-	config.vm.define "agent1" do |agent1|
-	  agent1.vm.box = "centos/7"
-		agent1.vm.hostname = "agent"
-	  agent1.vm.provision :shell, path: "agent.sh"
-	  agent1.vm.network "public_network", ip: "192.168.1.195", bridge: 'wlp2s0'
+	config.vm.define "splunk" do |splunk|
+	  splunk.vm.box = "centos/7"
+		splunk.vm.hostname = "splunk"
+	  splunk.vm.provision :shell, path: "splunk.sh"
+	  splunk.vm.network "public_network", ip: "192.168.1.195", bridge: 'wlp2s0'
   	end
 
 	config.vm.define "agent2" do |agent2|
@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
 
 	config.vm.define "agent5" do |agent5|
 	  agent5.vm.box = "centos/7"
-		agent.vm.hostname = "agent5"
+		agent5.vm.hostname = "agent5"
 	  agent5.vm.provision :shell, path: "agent.sh"
 	  agent5.vm.network "public_network", ip: "192.168.1.199", bridge: 'wlp2s0'
   	end

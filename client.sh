@@ -3,7 +3,8 @@ yum remove firewalld -y
 
 # Install net-tools
 yum install net-tools -y
-
+yum install curl -y 
+yum install wget -y 
 # Wazuh repository
 cat > /etc/yum.repos.d/wazuh.repo <<\EOF
 [wazuh_repo]
@@ -21,32 +22,34 @@ yum install wazuh-manager -y
 # Wazuh cluster dependencies
 yum install python-setuptools python-cryptography -y
 
-# Elastic GPG KEY
-rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
+# download splunkforwarder
+wget -O splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.1.3&product=universalforwarder&filename=splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm&wget=true'
 
-# Elastic repository
-cat > /etc/yum.repos.d/elastic.repo << EOF
-[elasticsearch-6.x]
-name=Elasticsearch repository for 6.x packages
-baseurl=https://artifacts.elastic.co/packages/6.x/yum
-gpgcheck=1
-gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-autorefresh=1
-type=rpm-md
-EOF
+# install splunkforwarder
+yum install -y splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm
 
-# Install Filebeat
-yum install filebeat-6.3.2 -y
+# set hostname
+sed -i "s:MANAGER_HOSTNAME:$(hostname):g" /opt/splunkforwarder/etc/system/local/inputs.conf
 
-# Enable services
+# props.conf
+curl -so /opt/splunkforwarder/etc/system/local/props.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/props.conf
+
+# inputs.conf
+curl -so /opt/splunkforwarder/etc/system/local/inputs.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/inputs.conf
+
+# accept license
+/opt/splunkforwarder/bin/splunk start --accept-license
+
+# forward to index
+/opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
+
+# restart service
+/opt/splunkforwarder/bin/splunk restart
+
 systemctl daemon-reload
-systemctl enable filebeat
+
 systemctl enable wazuh-manager
 
-# Filebeat configuration
-curl -so /etc/filebeat/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/3.4/extensions/filebeat/filebeat.yml
-sed -i 's:YOUR_ELASTIC_SERVER_IP:192.168.1.193:g' /etc/filebeat/filebeat.yml
 
 # Wazuh cluster configuration
 sed -i 's:<node_name>node01</node_name>:<node_name>node02</node_name>:g' /var/ossec/etc/ossec.conf
@@ -58,5 +61,3 @@ sed -i 's:<disabled>yes</disabled>:<disabled>no</disabled>:g' /var/ossec/etc/oss
 # Run Wazuh manager
 systemctl restart wazuh-manager
 
-# Run Filebeat
-systemctl restart filebeat
