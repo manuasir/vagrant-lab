@@ -38,13 +38,13 @@ curl -so /opt/splunkforwarder/etc/system/local/props.conf https://raw.githubuser
 curl -so /opt/splunkforwarder/etc/system/local/inputs.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/inputs.conf
 
 # accept license
-/opt/splunkforwarder/bin/splunk start --accept-license
+## /opt/splunkforwarder/bin/splunk start --accept-license
 
 # forward to index
-/opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
+# /opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
 
 # restart service
-/opt/splunkforwarder/bin/splunk restart
+# /opt/splunkforwarder/bin/splunk restart
 
 systemctl daemon-reload
 

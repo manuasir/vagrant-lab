@@ -42,8 +42,6 @@ wget -O splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm 'https://www.spl
 # install splunkforwarder
 yum install -y splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm
 
-# set hostname
-sed -i "s:MANAGER_HOSTNAME:$(hostname):g" /opt/splunkforwarder/etc/system/local/inputs.conf
 
 # props.conf
 curl -so /opt/splunkforwarder/etc/system/local/props.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/props.conf
@@ -51,14 +49,18 @@ curl -so /opt/splunkforwarder/etc/system/local/props.conf https://raw.githubuser
 # inputs.conf
 curl -so /opt/splunkforwarder/etc/system/local/inputs.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/inputs.conf
 
+
+# set hostname
+sed -i "s:MANAGER_HOSTNAME:$(hostname):g" /opt/splunkforwarder/etc/system/local/inputs.conf
+
 # accept license
 /opt/splunkforwarder/bin/splunk start --accept-license
 
 # forward to index
-/opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
+# /opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
 
 # restart service
-/opt/splunkforwarder/bin/splunk restart
+# /opt/splunkforwarder/bin/splunk restart
 
 # Enable Wazuh services
 systemctl daemon-reload
