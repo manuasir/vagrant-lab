@@ -38,8 +38,8 @@
         name: wazuh-agent
         state: present
 
-    - name:  agent_auth
-      shell: /var/ossec/bin/agent-auth -m {{ ip_agent }} -A agent$(( ( RANDOM % 1000 )  + 1 ))
+#    - name:  agent_auth
+#      shell: /var/ossec/bin/agent-auth -m {{ ip_agent }} -A agent$(( ( RANDOM % 1000 )  + 1 ))
 
     - name:  agent_auth
       shell: sed -i 's:MANAGER_IP:{{ ip_agent }}:g' /var/ossec/etc/ossec.conf
