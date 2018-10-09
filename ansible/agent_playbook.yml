@@ -1,0 +1,58 @@
+---
+
+- hosts: all
+  become: true
+
+  tasks:
+    - name: remove firewalld
+      yum:
+        name: firewalld
+        state: absent
+
+    - name: install net-tools
+      yum:
+        name: net-tools
+        state: present
+
+    - file:
+        path: /etc/yum.repos.d/wazuh.repo
+        state: touch
+        mode: "u=rw,g=r,o=r"
+
+    - name: install net-tools
+      lineinfile:
+        dest: /etc/yum.repos.d/wazuh.repo
+        state: present
+        line: "{{ item }}"
+      with_items:
+        - '[wazuh_repo]'
+        - 'gpgcheck=1'
+        - 'gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH'
+        - 'enabled=1'
+        - 'name=Wazuh repository'
+        - 'baseurl=https://packages.wazuh.com/3.x/yum/'
+        - 'protect=1'
+
+    - name: install wazuh-agent
+      yum:
+        name: wazuh-agent
+        state: present
+
+#    - name:  agent_auth
+#      shell: /var/ossec/bin/agent-auth -m {{ ip_agent }} -A agent$(( ( RANDOM % 1000 )  + 1 ))
+
+    - name:  agent_auth
+      shell: sed -i 's:MANAGER_IP:{{ ip_agent }}:g' /var/ossec/etc/ossec.conf
+
+    - name: daemon-reload
+      systemd: daemon_reload=yes
+
+    - name: enable wazuh-agent
+      systemd:
+        name: wazuh-agent
+        enabled: yes
+
+    - name: restart wazuh-agent
+      systemd:
+        name: wazuh-agent
+        state: restarted
