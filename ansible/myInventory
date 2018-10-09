@@ -1,0 +1,4 @@
+[centos]
+10.94.12.8 ansible_user=<myUser> ansible_sudo_pass=<myPassword>
+#(optional)
+
