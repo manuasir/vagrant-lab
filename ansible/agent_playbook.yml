@@ -19,7 +19,7 @@
         state: touch
         mode: "u=rw,g=r,o=r"
 
-    - name: install net-tools
+    - name: update /etc/yum.repos.d/wazuh.repo
       lineinfile:
         dest: /etc/yum.repos.d/wazuh.repo
         state: present

@@ -1,2 +1,4 @@
 locale: en_US.UTF-8
 ip_agent: 192.168.1.193
+key: 9d273b53510fef702b54a92e9cffc82e
+node_ip: 192.168.1.193
