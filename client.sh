@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Remove firewalld
 yum remove firewalld -y
 
