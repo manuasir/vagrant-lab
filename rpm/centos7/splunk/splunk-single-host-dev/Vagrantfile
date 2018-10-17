@@ -1,0 +1,54 @@
+Vagrant.configure("2") do |config|
+
+	config.vm.define "splunkSingleHost" do |splunkSingleHost|
+  		splunkSingleHost.vm.box = "centos/7"
+  		splunkSingleHost.vm.provision :shell, path: "splunk-single-host.sh"
+  		splunkSingleHost.vm.network :private_network, ip: "172.16.1.5"
+
+			splunkSingleHost.vm.hostname = "splunk-single-host"
+			splunkSingleHost.vm.provider "virtualbox" do |pmv|
+				pmv.memory = 768
+				pmv.cpus   = 1
+			end
+	end
+
+	config.vm.define "agent1" do |agent1|
+	  agent1.vm.box = "centos/7"
+		agent1.vm.hostname = "agent1"
+	  agent1.vm.provision :shell, path: "agent.sh"
+	  agent1.vm.network :private_network, ip: "172.16.1.10"
+
+			agent1.vm.hostname = "agent1"
+			agent1.vm.provider "virtualbox" do |pmv|
+				pmv.memory = 256
+				pmv.cpus   = 1
+			end
+	end
+
+	config.vm.define "agent2" do |agent2|
+	  agent2.vm.box = "centos/7"
+		agent2.vm.hostname = "agent2"
+	  agent2.vm.provision :shell, path: "agent.sh"
+	  agent2.vm.network :private_network, ip: "172.16.1.11"
+
+			agent2.vm.hostname = "agent2"
+			agent2.vm.provider "virtualbox" do |pmv|
+				pmv.memory = 256
+				pmv.cpus   = 1
+			end
+	end
+
+	config.vm.define "agent3" do |agent3|
+	  agent3.vm.box = "centos/7"
+		agent3.vm.hostname = "agent3"
+	  agent3.vm.provision :shell, path: "agent.sh"
+	  agent3.vm.network :private_network, ip: "172.16.1.12"
+
+			agent3.vm.hostname = "agent3"
+			agent3.vm.provider "virtualbox" do |pmv|
+				pmv.memory = 256
+				pmv.cpus   = 1
+			end
+	end	
+
+end

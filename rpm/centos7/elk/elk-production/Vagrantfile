@@ -1,0 +1,60 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+	# Master manager + Filebeat instance
+	config.vm.define "master" do |master|
+		master.vm.box = "centos/7"
+		master.vm.provision :shell, path: "manager-master.sh"
+		master.vm.network :private_network, ip: "172.16.1.2"
+		master.vm.provider "virtualbox" do |pmv|
+	      pmv.memory = 1024
+	      pmv.cpus   = 1
+		end
+	end
+
+	# Worker manager + Filebeat instance
+	config.vm.define "worker" do |worker|
+	  	worker.vm.box = "centos/7"
+	  	worker.vm.provision :shell, path: "manager-worker.sh"
+	  	worker.vm.network :private_network, ip: "172.16.1.3"
+		worker.vm.provider "virtualbox" do |pmv|
+	      pmv.memory = 1024
+	      pmv.cpus   = 1
+		end
+	end
+
+	# Logstash + Elasticsearch instance
+	config.vm.define "elasticsearch" do |elasticsearch|
+	  	elasticsearch.vm.box = "centos/7"
+	  	elasticsearch.vm.provision :shell, path: "elasticsearch.sh"
+	  	elasticsearch.vm.network :private_network, ip: "172.16.1.4"
+		elasticsearch.vm.provider "virtualbox" do |pmv|
+	      pmv.memory = 4096
+	      pmv.cpus   = 2
+		end
+	end
+
+	# Kibana instance
+	config.vm.define "kibana" do |kibana|
+	  	kibana.vm.box = "centos/7"
+	  	kibana.vm.provision :shell, path: "kibana.sh"
+	  	kibana.vm.network :private_network, ip: "172.16.1.5"
+		kibana.vm.provider "virtualbox" do |pmv|
+	      pmv.memory = 4096
+	      pmv.cpus   = 1
+		end
+	end
+
+	# Agent instance
+	config.vm.define "agent" do |agent|
+	  	agent.vm.box = "centos/7"
+	  	agent.vm.provision :shell, path: "agent.sh"
+	  	agent.vm.network :private_network, ip: "172.16.1.6"
+		agent.vm.provider "virtualbox" do |pmv|
+			pmv.memory = 512
+			pmv.cpus   = 1
+		end
+	end
+end
