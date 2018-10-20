@@ -2,3 +2,26 @@ locale: en_US.UTF-8
 ip_agent: 192.168.1.193
 key: 9d273b53510fef702b54a92e9cffc82e
 node_ip: 192.168.1.193
+
+# ansible user and password from ansible-vault
+# https://docs.ansible.com/ansible/2.4/vault.html
+
+username: <ansible_user>
+user_password: !vault |
+    $ANSIBLE_VAULT;1.1;AES256
+    62313365396662343061393464336163383764373764613633653634306231386433626436623361
+    6134333665353966363534333632666535333761666131620a663537646436643839616531643561
+    63396265333966386166373632626539326166353965363262633030333630313338646335303630
+    3438626666666137650a353638643435666633633964366338633066623234616432373231333331
+    6564
+
+# vault passwords can be passed in as encrypted values as variables 
+# password: "{{ user_password | trim }}" 
+# trim is recommended to eliminate whitespace
+#
+# the whole inventory file can also be encrypted with vault as well to mask your
+# plain text passwords. 
+#
+# you would just call the playbook with ansible-playbook master_playbook --ask-vault-pass
+# enter the vault pass if all the values are encrypted with that one password it would
+# decrypt any files and values and run the play

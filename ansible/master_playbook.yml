@@ -1,9 +1,9 @@
 ---
-
 - hosts: all
   become: true
-  roles:
-    #- general ==> BUG : Issue open https://github.com/ansible/ansible/issues/44708
+  ansible_user: "{{ username }}"
+  roles: 
+    - general
 
   tasks:
   - name: remove firewalld
@@ -114,4 +114,5 @@
 
   - name:  /var/ossec/bin/ossec-authd -i
     shell: /var/ossec/bin/ossec-authd -i
+
 
