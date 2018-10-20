@@ -1,6 +1,7 @@
 ---
-
 - hosts: all
- become: true
+  become: true
+  ansible_user: "{{ username }}"
   roles: 
     - general
+...
