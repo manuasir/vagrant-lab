@@ -4,4 +4,115 @@
   ansible_user: "{{ username }}"
   roles: 
     - general
-...
+
+  tasks:
+  - name: remove firewalld
+    yum:
+      name: firewalld
+      state: absent
+
+  - name: install net-tools, git, zip
+    yum:
+      name:
+      - net-tools
+      - git
+      - zip
+      state: present
+
+  - name: update /etc/yum.repos.d/wazuh.repo
+    lineinfile:
+      dest: /etc/yum.repos.d/wazuh.repo
+      state: present
+      line: "{{ item }}"
+    with_items:
+    - '[wazuh_repo]'
+    - 'gpgcheck=1'
+    - 'gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH'
+    - 'enabled=1'
+    - 'name=Wazuh repository'
+    - 'baseurl=https://packages.wazuh.com/3.x/yum/'
+    - 'protect=1'
+
+  - name: install wazuh-manager
+    yum:
+      name:
+      - wazuh-manager
+      state: present
+
+  - name:  curl rpm
+    shell: curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -
+
+  - name: install nodejs, wazuh-api, python-setuptools, python-cryptography
+    yum:
+      name:
+      - nodejs
+      - wazuh-api
+      - python-setuptools
+      - python-cryptography
+      state: present
+
+  - name:  set key
+    shell: sed -i 's:<key></key>:<key>{{ key }}</key>:g' /var/ossec/etc/ossec.conf
+
+  - name:  set node_ip
+    shell: sed -i 's:<node>NODE_IP</node>:<node>{{ node_ip }}</node>:g' /var/ossec/etc/ossec.conf
+
+  - name:  set disabled
+    shell: sed -i 's:<disabled>yes</disabled>:<disabled>no</disabled>:g' /var/ossec/etc/ossec.conf
+
+  - name:  download splunkforwarder
+    shell: wget -O splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.1.3&product=universalforwarder&filename=splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm&wget=true'
+
+  - name: install splunkforwarder
+    yum:
+      name: splunkforwarder-7.1.3-51d9cac7b837-linux-2.6-x86_64.rpm
+      state: present
+
+  - name:  props.conf
+    shell: curl -so /opt/splunkforwarder/etc/system/local/props.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/props.conf
+
+  - name:  inputs.conf
+    shell: curl -so /opt/splunkforwarder/etc/system/local/inputs.conf https://raw.githubusercontent.com/wazuh/wazuh/3.6/extensions/splunk/inputs.conf
+
+  - name:  set hostname
+    shell: sed -i "s:MANAGER_HOSTNAME:$(hostname):g" /opt/splunkforwarder/etc/system/local/inputs.conf
+
+  #- name:  splunk start
+   # shell: /opt/splunkforwarder/bin/splunk start --accept-license
+
+  # forward to index
+  # /opt/splunkforwarder/bin/splunk add forward-server 192.168.1.195:9997
+
+  # restart service
+  # /opt/splunkforwarder/bin/splunk restart
+
+  - name: daemon-reload
+    systemd: daemon_reload=yes
+
+  - name: enable wazuh-manager
+    systemd:
+      name: wazuh-manager
+      enabled: yes
+
+  - name: enable wazuh-api
+    systemd:
+      name: wazuh-api
+      enabled: yes
+
+  - name: restart wazuh-manager
+    systemd:
+      name: wazuh-manager
+      state: restarted
+
+  - name: restart  wazuh-api
+    systemd:
+      name: wazuh-api
+      state: restarted
+
+  - name:  echo "Listening authd..."
+    shell: echo "Listening authd..."
+
+  - name:  /var/ossec/bin/ossec-authd -i
+    shell: /var/ossec/bin/ossec-authd -i
+
+
