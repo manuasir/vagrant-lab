@@ -16,7 +16,7 @@ protect=1
 EOF
 
 # Install Wazuh agent
-yum install wazuh-agent -y
+yum install wazuh-agent-3.6.1 -y
 
 # Register agent using authd
 /var/ossec/bin/agent-auth -m 172.16.1.4 -A agent$(( ( RANDOM % 1000 )  + 1 ))
