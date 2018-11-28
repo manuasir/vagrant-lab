@@ -12,7 +12,7 @@ yum install wazuh-agent -y
 
 # Register agent using authd
 /var/ossec/bin/agent-auth -m 172.16.1.4 -A agent$(( ( RANDOM % 1000 )  + 1 ))
-sed -i 's:MANAGER_IP:172.16.1.4:g' /var/ossec/etc/ossec.conf
+sed -i 's:MANAGER_IP:172.16.1.5:g' /var/ossec/etc/ossec.conf
 
 # delete last line
 sed -i '$ d' /var/ossec/etc/ossec.conf
